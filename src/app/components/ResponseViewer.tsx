@@ -1,6 +1,8 @@
 "use client";
-
-import ReactJson from "react-json-view";
+import dynamic from "next/dynamic";
+const ReactJson = dynamic(() => import("react-json-view"), {
+  ssr: false,
+});
 
 interface Props {
   status: number;
@@ -10,9 +12,6 @@ interface Props {
 }
 
 export default function ResponseViewer({ status, data, headers, time }: Props) {
-
-    console.log("---------------------------")
-  console.log(status, data, headers, time);
 
   return (
     <div className="p-4 border rounded mt-4 space-y-2 bg-gray-50 dark:bg-gray-800">

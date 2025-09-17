@@ -1,22 +1,28 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectItem, SelectContent } from "@/components/ui/select";
+import {
+  Select,
+  SelectItem,
+  SelectContent,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { sendRequest } from "@/lib/fetcher";
 import AuthInputs from "./AuthInputs";
 
 const RequestSchema = z.object({
-    method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-    url: z.string().url("Must be a valid URL"),
-    headers: z.string().optional(), // you can parse JSON or key:value later
-    body: z.string().optional(),
-    authType: z.enum(["None", "Bearer", "APIKey"]),
-    authValue: z.string().optional(),
+  method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+  url: z.string().url("Must be a valid URL"),
+  headers: z.string().optional(),
+  body: z.string().optional(),
+  authType: z.enum(["None", "Bearer", "APIKey"]),
+  authValue: z.string().optional(),
 });
 
 type RequestFormType = z.infer<typeof RequestSchema>;
@@ -31,8 +37,13 @@ interface Props {
 }
 
 function RequestForm({ onResponse }: Props) {
-
-  const { register, handleSubmit, formState: { errors }} = useForm<RequestFormType>({
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<RequestFormType>({
     resolver: zodResolver(RequestSchema),
     defaultValues: {
       method: "GET",
@@ -41,23 +52,19 @@ function RequestForm({ onResponse }: Props) {
   });
 
   const onSubmit = async (values: RequestFormType) => {
-
     let headers: Record<string, string> = {};
 
     if (values.authType === "Bearer" && values.authValue) {
       headers["Authorization"] = `Bearer ${values.authValue}`;
-    }
-    else if (values.authType === "APIKey" && values.authValue) {
+    } else if (values.authType === "APIKey" && values.authValue) {
       headers["x-api-key"] = values.authValue;
     }
 
-    // if user added custom headers as JSON
     if (values.headers) {
       try {
         const extra = JSON.parse(values.headers);
         Object.assign(headers, extra);
-      }
-      catch (e) {
+      } catch (e) {
         alert("Headers must be valid JSON");
         return;
       }
@@ -67,9 +74,7 @@ function RequestForm({ onResponse }: Props) {
     if (values.body) {
       try {
         body = JSON.parse(values.body);
-      }
-      catch (e) {
-        // if not valid JSON, send as text
+      } catch (e) {
         body = values.body;
       }
     }
@@ -82,15 +87,27 @@ function RequestForm({ onResponse }: Props) {
     });
 
     onResponse(response);
-  }
+  };
+
+  const watchAuthType = watch("authType");
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4 border rounded">
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">Method</label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Controller
+          control={control}
+          name="method"
+          render={({ field }) => (
 
-            <Select {...register("method")}>
+            <div>
+              <label className="block mb-1">Method</label>
+              <Select value={field.value} onValueChange={field.onChange}>
+
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a method" />
+                </SelectTrigger>
+
                 <SelectContent>
                     {["GET", "POST", "PUT", "PATCH", "DELETE"].map((m) => (
                         <SelectItem key={m} value={m}>
@@ -98,55 +115,72 @@ function RequestForm({ onResponse }: Props) {
                         </SelectItem>
                     ))}
                 </SelectContent>
-            </Select>
-        </div>
 
-        <div>
-            <label className="block">URL</label>
-            <Input {...register("url")} placeholder="https://api.example.com/data" />
-            {errors.url && <p className="text-red-700">{errors.url.message}</p>}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label className="block">Auth Type</label>
-
-                <Select {...register("authType")}>
-                    <SelectContent>
-                        {["None", "Bearer", "APIKey"].map((a) => (
-                            <SelectItem key={a} value={a}>
-                                {a}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+              </Select>
             </div>
-        </div>
-
-        {/* Conditional auth value */}
-        <AuthInputs register={register} watchAuthType={(register as any).watch?.("authType")} />
+          )}
+        />
 
         <div>
-            <label className="block">Headers (JSON)</label>
-            <Textarea
-                {...register("headers")}
-                placeholder='{ "Accept": "application/json", "Custom-Header": "value" }'
-                rows={3}
-            />
-        </div>
+            <label className="block mb-1">URL</label>
 
-        <div>
-            <label className="block">Body (JSON or Raw Text)</label>
-            <Textarea
-                {...register("body")}
-                placeholder='{"key":"value"}'
-                rows={5}
-            />
-        </div>
+            <Input {...register("url")} placeholder="https://api.example.com/data" />
 
-        <Button className="" type="submit">Send Request</Button>
+            {errors.url && <p className="text-red-700 text-sm">{errors.url.message}</p>}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Controller
+          control={control}
+          name="authType"
+          render={({ field }) => (
+
+            <div>
+              <label className="block mb-1">Auth Type</label>
+              <Select value={field.value} onValueChange={field.onChange}>
+
+                <SelectTrigger>
+                  <SelectValue placeholder="Auth Type" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  {["None", "Bearer", "APIKey"].map((a) => (
+                    <SelectItem key={a} value={a}>
+                      {a}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+
+              </Select>
+            </div>
+          )}
+        />
+      </div>
+
+      <AuthInputs register={register} watchAuthType={watchAuthType} />
+
+      <div>
+        <label className="block mb-1">Headers (JSON)</label>
+        <Textarea
+            {...register("headers")}
+            placeholder='{ "Accept": "application/json", "Custom-Header": "value" }'
+            rows={3}
+        />
+      </div>
+
+      <div>
+        <label className="block mb-1">Body (JSON or Raw Text)</label>
+        <Textarea
+            {...register("body")}
+            placeholder='{"key":"value"}'
+            rows={5}
+        />
+      </div>
+
+      <Button className="cursor-pointer" type="submit">Send Request</Button>
     </form>
-  )
+  );
 }
 
-export default RequestForm
+export default RequestForm;
