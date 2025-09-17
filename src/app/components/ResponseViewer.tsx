@@ -13,7 +13,7 @@ interface Props {
 
 export default function ResponseViewer({ status, data, headers, time }: Props) {
 
-  let totalBytes = prettyBytes(
+  const totalBytes = prettyBytes(
     (data ? JSON.stringify(data).length : 0) +
     (headers ? JSON.stringify(headers).length : 0)
   );
