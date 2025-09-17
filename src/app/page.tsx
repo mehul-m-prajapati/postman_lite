@@ -18,7 +18,6 @@ export default function Home() {
 
   // for history items
   const handleResponse = (resp: Resp & { method: string; url: string }) => {
-
     setResponse(resp);
 
     // save to history
@@ -52,14 +51,7 @@ export default function Home() {
             <h1 className="text-2xl font-bold text-center
              text-gray-800 dark:text-gray-200">Postman Lite</h1> */}
 
-             <RequestForm onResponse={(resp) =>
-                handleResponse({
-                    ...resp,
-                    method: (resp as any).method || "GET",  // pass method/url if you store
-                    url: (resp as any).url || "",
-                  })
-                }
-            />
+            <RequestForm onResponse={handleResponse} />
 
             {response && <ResponseViewer {...response} />}
 

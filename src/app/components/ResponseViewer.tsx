@@ -1,5 +1,8 @@
 "use client";
+
+import prettyBytes from 'pretty-bytes';
 import dynamic from "next/dynamic";
+import { useState } from 'react';
 const ReactJson = dynamic(() => import("react-json-view"), {
   ssr: false,
 });
@@ -13,10 +16,21 @@ interface Props {
 
 export default function ResponseViewer({ status, data, headers, time }: Props) {
 
+  let totalBytes = prettyBytes(
+    (data ? JSON.stringify(data).length : 0) +
+    (headers ? JSON.stringify(headers).length : 0)
+  );
+
   return (
     <div className="p-4 border rounded mt-4 space-y-2 bg-gray-50 dark:bg-gray-800">
+
+      <h1 className="text-xl font-bold">Response</h1>
+      <hr></hr>
+
       <div>
-        <strong>Status:</strong> {status} — <strong>Time:</strong> {time} ms
+        <strong>Status:</strong> {status} {'- '}
+        <strong>Time:</strong> {time} ms {'- '}
+        <strong>Size:</strong> {totalBytes}
       </div>
 
       <div>

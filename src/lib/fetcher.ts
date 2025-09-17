@@ -21,6 +21,8 @@ export async function sendRequest({ url, method, headers, body}: IRequest) {
   const resp = await axios(config);
   const time = Date.now() - start;
 
+  console.log(resp);
+
   return {
     status: resp.status,
     data: resp.data,

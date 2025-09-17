@@ -33,7 +33,7 @@ interface Props {
     data: any;
     headers: any;
     time: number;
-  }) => void;
+  } & Pick<RequestFormType, "method" | "url">) => void
 }
 
 function RequestForm({ onResponse }: Props) {
@@ -86,7 +86,11 @@ function RequestForm({ onResponse }: Props) {
       body,
     });
 
-    onResponse(response);
+    onResponse({
+        ...response,
+        method: values.method,
+        url: values.url,
+    });
   };
 
   const watchAuthType = watch("authType");

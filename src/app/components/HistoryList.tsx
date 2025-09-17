@@ -30,6 +30,7 @@ function HistoryList({ itemClicked }: Props) {
   return (
     <div className="p-4 border rounded mt-4 h-64 overflow-y-auto bg-white dark:bg-gray-900">
       <h3 className="font-bold mb-2">History</h3>
+      <hr></hr>
 
       {history.length === 0 && <div>No history yet</div>}
 
@@ -40,7 +41,7 @@ function HistoryList({ itemClicked }: Props) {
           onClick={() => handleClick(item)}
         >
           <span className="font-mono">{item.method}</span> – {item.url}
-          <span className="text-sm text-gray-500">({item.status}, {item.time}ms)</span>
+          <span className="text-sm text-gray-500"> (Status: {item.status}, Time: {item.time}ms)</span>
         </div>
       ))}
     </div>
