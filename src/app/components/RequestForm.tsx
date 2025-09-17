@@ -94,41 +94,56 @@ function RequestForm({ onResponse }: Props) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4 border rounded">
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Controller
-          control={control}
-          name="method"
-          render={({ field }) => (
+        {/* --- This is the new inline row --- */}
+        <div className="flex items-center space-x-3">
+            {/* Method Select */}
+            <Controller
+                control={control}
+                name="method"
+                render={({ field }) => (
+                    <div className="flex-shrink-0">
 
-            <div>
-              <label className="block mb-1">Method</label>
-              <Select value={field.value} onValueChange={field.onChange}>
+                        <Select value={field.value} onValueChange={field.onChange}>
+                            <SelectTrigger className="w-24 px-4 py-2 border border-gray-300 rounded-md bg-gray-100 hover:border-orange-500 focus:outline-none focus:border-orange-500">
+                            <SelectValue placeholder="Method" />
+                            </SelectTrigger>
 
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a method" />
-                </SelectTrigger>
+                            <SelectContent>
+                            {["GET", "POST", "PUT", "PATCH", "DELETE"].map((m) => (
+                                <SelectItem key={m} value={m}>
+                                    {m}
+                                </SelectItem>
+                            ))}
+                            </SelectContent>
+                        </Select>
 
-                <SelectContent>
-                    {["GET", "POST", "PUT", "PATCH", "DELETE"].map((m) => (
-                        <SelectItem key={m} value={m}>
-                            {m}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
+                    </div>
+                )}
+            />
 
-              </Select>
+            {/* URL Input */}
+            <div className="flex-grow">
+                <Input
+                    {...register("url")}
+                    placeholder="https://api.example.com/data"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md hover:border-orange-500 focus:outline-none focus:border-orange-500"
+                />
+                {errors.url && (
+                    <p className="text-red-700 text-sm mt-1">{errors.url.message}</p>
+                )}
             </div>
-          )}
-        />
 
-        <div>
-            <label className="block mb-1">URL</label>
-
-            <Input {...register("url")} placeholder="https://api.example.com/data" />
-
-            {errors.url && <p className="text-red-700 text-sm">{errors.url.message}</p>}
+            {/* Send Button */}
+            <Button
+                type="submit"
+                className="flex-shrink-0 px-6 py-2 rounded-md font-semibold
+                 text-white bg-orange-600 cursor-pointer hover:bg-orange-800"
+            >
+                Send
+            </Button>
         </div>
-      </div>
+
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Controller
@@ -177,8 +192,6 @@ function RequestForm({ onResponse }: Props) {
             rows={5}
         />
       </div>
-
-      <Button className="cursor-pointer" type="submit">Send Request</Button>
     </form>
   );
 }

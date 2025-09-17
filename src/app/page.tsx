@@ -46,11 +46,11 @@ export default function Home() {
 
 
   return (
-    <div className="min-h-screen p-8 bg-gray-100 dark:bg-gray-900">
-        <div className="max-w-3xl mx-auto space-y-6">
-
+    <div className="min-h-screen p-8 bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-5xl mx-auto space-y-6">
+            {/*
             <h1 className="text-2xl font-bold text-center
-             text-gray-800 dark:text-gray-200">Postman Lite</h1>
+             text-gray-800 dark:text-gray-200">Postman Lite</h1> */}
 
              <RequestForm onResponse={(resp) =>
                 handleResponse({
