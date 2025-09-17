@@ -1,11 +1,8 @@
 "use client";
 
 import prettyBytes from 'pretty-bytes';
-import dynamic from "next/dynamic";
-import { useState } from 'react';
-const ReactJson = dynamic(() => import("react-json-view"), {
-  ssr: false,
-});
+import { JsonView, allExpanded, defaultStyles } from 'react-json-view-lite';
+import 'react-json-view-lite/dist/index.css';
 
 interface Props {
   status: number;
@@ -33,14 +30,14 @@ export default function ResponseViewer({ status, data, headers, time }: Props) {
         <strong>Size:</strong> {totalBytes}
       </div>
 
-      <div>
+      <div className='py-2'>
         <strong>Response Headers:</strong>
-        <ReactJson src={headers ?? {}} name={false} collapsed={true} />
+        <JsonView data={headers ?? {}} shouldExpandNode={allExpanded} style={defaultStyles} />
       </div>
 
       <div>
         <strong>Response Body:</strong>
-        <ReactJson src={data} name={false} collapsed={false} />
+        <JsonView data={data ?? {}} shouldExpandNode={allExpanded} style={defaultStyles} />
       </div>
     </div>
   )
