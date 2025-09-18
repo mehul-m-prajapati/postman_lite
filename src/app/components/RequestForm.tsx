@@ -51,18 +51,18 @@ function RequestForm({ onResponse }: Props) {
     },
   });
 
-  const onSubmit = async (values: RequestFormType) => {
+  const onSubmit = async (formData: RequestFormType) => {
     let headers: Record<string, string> = {};
 
-    if (values.authType === "Bearer" && values.authValue) {
-      headers["Authorization"] = `Bearer ${values.authValue}`;
-    } else if (values.authType === "APIKey" && values.authValue) {
-      headers["x-api-key"] = values.authValue;
+    if (formData.authType === "Bearer" && formData.authValue) {
+      headers["Authorization"] = `Bearer ${formData.authValue}`;
+    } else if (formData.authType === "APIKey" && formData.authValue) {
+      headers["x-api-key"] = formData.authValue;
     }
 
-    if (values.headers) {
+    if (formData.headers) {
       try {
-        const extra = JSON.parse(values.headers);
+        const extra = JSON.parse(formData.headers);
         Object.assign(headers, extra);
       } catch (e) {
         alert("Headers must be valid JSON");
@@ -71,25 +71,25 @@ function RequestForm({ onResponse }: Props) {
     }
 
     let body: any = undefined;
-    if (values.body) {
+    if (formData.body) {
       try {
-        body = JSON.parse(values.body);
+        body = JSON.parse(formData.body);
       } catch (e) {
-        body = values.body;
+        body = formData.body;
       }
     }
 
     const response = await sendRequest({
-      url: values.url,
-      method: values.method,
+      url: formData.url,
+      method: formData.method,
       headers,
       body,
     });
 
     onResponse({
         ...response,
-        method: values.method,
-        url: values.url,
+        method: formData.method,
+        url: formData.url,
     });
   };
 
