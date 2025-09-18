@@ -177,7 +177,7 @@ function RequestForm({ onResponse }: Props) {
         />
       </div>
 
-      <AuthInputs register={register} watchAuthType={watchAuthType} />
+      <AuthInputs register={register} authType={watchAuthType} />
 
       <div>
         <label className="block mb-1">Headers (JSON)</label>

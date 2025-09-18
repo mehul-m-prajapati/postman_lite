@@ -4,15 +4,15 @@ import { UseFormRegister } from "react-hook-form";
 
 interface Props {
   register: UseFormRegister<any>;
-  watchAuthType: string;
+  authType: string;
 }
 
 
-function AuthInputs({ register, watchAuthType }: Props) {
+function AuthInputs({ register, authType }: Props) {
 
   return (
     <div>
-      {watchAuthType === "Bearer" && (
+      {authType === "Bearer" && (
         <div>
           <label className="block">Bearer Token</label>
           <input
@@ -23,7 +23,7 @@ function AuthInputs({ register, watchAuthType }: Props) {
         </div>
       )}
 
-      {watchAuthType === "APIKey" && (
+      {authType === "APIKey" && (
         <div>
           <label className="block">API Key Value</label>
           <input
