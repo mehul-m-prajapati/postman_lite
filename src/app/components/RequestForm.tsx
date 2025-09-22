@@ -5,7 +5,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectItem,
@@ -14,7 +13,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { sendRequest } from "@/lib/fetcher";
-import AuthInputs from "./AuthInputs";
+import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import "react-tabs/style/react-tabs.css";
+import AuthTab from "./Tabs/AuthTab";
+import HeadersTab from "./Tabs/HeadersTab";
+import BodyTab from "./Tabs/BodyTab";
+import QueryParamsTab from "./Tabs/QueryParamsTab";
+
 
 const RequestSchema = z.object({
   method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
@@ -23,6 +28,7 @@ const RequestSchema = z.object({
   body: z.string().optional(),
   authType: z.enum(["None", "Bearer", "APIKey"]),
   authValue: z.string().optional(),
+  queryParams: z.string().optional(),
 });
 
 type RequestFormType = z.infer<typeof RequestSchema>;
@@ -58,6 +64,19 @@ function RequestForm({ onResponse }: Props) {
       headers["Authorization"] = `Bearer ${formData.authValue}`;
     } else if (formData.authType === "APIKey" && formData.authValue) {
       headers["x-api-key"] = formData.authValue;
+    }
+
+    // Parse queryParams and append to URL
+    let url = formData.url;
+    if (formData.queryParams) {
+      try {
+        const params = JSON.parse(formData.queryParams);
+        const searchParams = new URLSearchParams(params);
+        url += (url.includes("?") ? "&" : "?") + searchParams.toString();
+      } catch (e) {
+        alert("Query Params must be valid JSON");
+        return;
+      }
     }
 
     if (formData.headers) {
@@ -108,7 +127,9 @@ function RequestForm({ onResponse }: Props) {
                     <div className="flex-shrink-0">
 
                         <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger className="w-24 px-4 py-2 border border-gray-300 rounded-md bg-gray-100 hover:border-orange-500 focus:outline-none focus:border-orange-500">
+                            <SelectTrigger className="w-24 px-4 py-2 border border-gray-300
+                                rounded-md bg-gray-100 hover:border-orange-500
+                                focus:outline-none focus:border-orange-500">
                             <SelectValue placeholder="Method" />
                             </SelectTrigger>
 
@@ -120,7 +141,6 @@ function RequestForm({ onResponse }: Props) {
                             ))}
                             </SelectContent>
                         </Select>
-
                     </div>
                 )}
             />
@@ -130,7 +150,8 @@ function RequestForm({ onResponse }: Props) {
                 <Input
                     {...register("url")}
                     placeholder="https://api.example.com/data"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md hover:border-orange-500 focus:outline-none focus:border-orange-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md
+                     hover:border-orange-500 focus:outline-none focus:border-orange-500"
                 />
                 {errors.url && (
                     <p className="text-red-700 text-sm mt-1">{errors.url.message}</p>
@@ -141,61 +162,36 @@ function RequestForm({ onResponse }: Props) {
             <Button
                 type="submit"
                 className="flex-shrink-0 px-6 py-2 rounded-md font-semibold
-                 text-white bg-orange-600 cursor-pointer hover:bg-orange-800"
-            >
-                Send
+                    text-white bg-orange-600 cursor-pointer hover:bg-orange-800"
+            > Send
             </Button>
         </div>
 
+        {/* Tabs for Headers, Body, Auth, Query Params */}
+        <Tabs>
+            <TabList className="flex space-x-4 border-b mb-4">
+                <Tab className="cursor-pointer px-4 py-2 rounded-t hover:bg-gray-200">Auth</Tab>
+                <Tab className="cursor-pointer px-4 py-2 rounded-t hover:bg-gray-200">Headers</Tab>
+                <Tab className="cursor-pointer px-4 py-2 rounded-t hover:bg-gray-200">Body</Tab>
+                <Tab className="cursor-pointer px-4 py-2 rounded-t hover:bg-gray-200">Query Params</Tab>
+            </TabList>
 
+            <TabPanel>
+                <AuthTab control={control} register={register} authType={watchAuthType} errors={errors} />
+            </TabPanel>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Controller
-          control={control}
-          name="authType"
-          render={({ field }) => (
+            <TabPanel>
+                <HeadersTab register={register} errors={errors} />
+            </TabPanel>
 
-            <div>
-              <label className="block mb-1">Auth Type</label>
-              <Select value={field.value} onValueChange={field.onChange}>
+            <TabPanel>
+                <BodyTab register={register} errors={errors} />
+            </TabPanel>
 
-                <SelectTrigger>
-                  <SelectValue placeholder="Auth Type" />
-                </SelectTrigger>
-
-                <SelectContent>
-                  {["None", "Bearer", "APIKey"].map((a) => (
-                    <SelectItem key={a} value={a}>
-                      {a}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-
-              </Select>
-            </div>
-          )}
-        />
-      </div>
-
-      <AuthInputs register={register} authType={watchAuthType} />
-
-      <div>
-        <label className="block mb-1">Headers (JSON)</label>
-        <Textarea
-            {...register("headers")}
-            placeholder='{ "Accept": "application/json", "Custom-Header": "value" }'
-            rows={3}
-        />
-      </div>
-
-      <div>
-        <label className="block mb-1">Body (JSON or Raw Text)</label>
-        <Textarea
-            {...register("body")}
-            placeholder='{"key":"value"}'
-            rows={5}
-        />
-      </div>
+            <TabPanel>
+                <QueryParamsTab register={register} errors={errors} />
+            </TabPanel>
+        </Tabs>
     </form>
   );
 }
